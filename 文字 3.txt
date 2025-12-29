@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hokkaido Trip | Minimalist</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=M+PLUS+1p:wght@300;400;500&display=swap');
+        
+        :root {
+            --bg-gray: #F5F5F7;
+            --premium-gray: #E5E5E5;
+            --text-main: #3A3A3A;
+            --accent-gray: #8E8E93;
+        }
+
+        body { 
+            font-family: 'M PLUS 1p', 'Noto Sans TC', sans-serif; 
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tab-active {
+            color: #000;
+            border-bottom: 2px solid #000;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        input, select, button {
+            transition: all 0.3s ease;
+        }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="selection:bg-gray-200">
+
+<div id="app" class="max-w-md mx-auto min-h-screen relative shadow-2xl bg-[#F5F5F7]">
+    
+    <nav class="sticky top-0 z-50 bg-[#F5F5F7]/80 backdrop-blur-md border-b border-gray-200">
+        <div class="px-6 pt-6 pb-2">
+            <h1 class="text-xs tracking-[0.2em] font-light text-gray-400 uppercase mb-4">Hokkaido 2025</h1>
+            <div class="flex justify-between items-center text-gray-400 pb-1">
+                <button @click="activeTab = 'home'" :class="{'tab-active': activeTab === 'home'}" class="pb-2 px-1">
+                    <i class="fa-solid fa-house-chimney text-lg"></i>
+                </button>
+                <button @click="activeTab = 'schedule'" :class="{'tab-active': activeTab === 'schedule'}" class="pb-2 px-1">
+                    <i class="fa-solid fa- calendar-day text-lg"></i>
+                </button>
+                <button @click="activeTab = 'shopping'" :class="{'tab-active': activeTab === 'shopping'}" class="pb-2 px-1">
+                    <i class="fa-solid fa-bag-shopping text-lg"></i>
+                </button>
+                <button @click="activeTab = 'spending'" :class="{'tab-active': activeTab === 'spending'}" class="pb-2 px-1">
+                    <i class="fa-solid fa- vault text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="p-6">
+        
+        <div v-if="activeTab === 'home'" class="space-y-6">
+            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+                <p class="text-[10px] tracking-widest text-gray-400 uppercase mb-1">Exchange Rate</p>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-light">0.215</span>
+                    <span class="text-xs text-gray-400">JPY/TWD</span>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-4 border-t pt-4">免稅額提示：¥5,000 以上</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/50 p-6 rounded-[2rem] border border-white">
+                    <p class="text-[10px] text-gray-400 uppercase">Weather</p>
+                    <p class="text-xl mt-1">-2°C 🌨️</p>
+                </div>
+                <div class="bg-white/50 p-6 rounded-[2rem] border border-white text-center">
+                    <p class="text-[10px] text-gray-400 uppercase">Days</p>
+                    <p class="text-xl mt-1">Day 3</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="activeTab === 'schedule'" class="space-y-6">
+            <div class="flex justify-between items-end">
+                <h2 class="text-2xl font-light tracking-tight text-gray-800">Itinerary</h2>
+                <button @click="addItem('schedule')" class="text-[10px] border border-gray-300 px-3 py-1 rounded-full text-gray-500 hover:bg-black hover:text-white transition">ADD EVENT</button>
+            </div>
+            
+            <div class="space-y-8 mt-4">
+                <div v-for="(item, index) in schedule" :key="index" class="relative pl-6 border-l border-gray-200">
+                    <div class="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-gray-300"></div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-gray-400 font-mono">{{ item.time }}</span>
+                        <h4 class="text-base font-normal text-gray-700 mt-1">{{ item.location }}</h4>
+                        <div class="flex gap-3 mt-2">
+                            <button @click="openMap(item.location)" class="text-[10px] text-gray-400 underline decoration-gray-200 underline-offset-4">Google Maps</button>
+                            <button @click="removeItem('schedule', index)" class="text-[10px] text-red-200 hover:text-red-400">DELETE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="activeTab === 'shopping'" class="space-y-6">
+            <div class="flex justify-between items-end">
+                <h2 class="text-2xl font-light tracking-tight text-gray-800">Shopping</h2>
+                <button @click="triggerPhotoUpload" class="text-[10px] border border-gray-300 px-3 py-1 rounded-full text-gray-500">UPLOAD PHOTO</button>
+                <input type="file" id="photoInput" class="hidden" accept="image/*" @change="handlePhotoUpload">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div v-for="(item, index) in shoppingList" :key="index" class="group">
+                    <div class="aspect-square bg-gray-200 rounded-2xl overflow-hidden mb-2 relative">
+                        <img :src="item.img || 'https://placehold.co/400x400/E5E5E5/A0A0A0?text=No+Image'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500">
+                        <button @click="removeItem('shopping', index)" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-white/80 w-6 h-6 rounded-full text-[10px] transition">✕</button>
+                    </div>
+                    <h5 class="text-xs font-medium text-gray-600 truncate">{{ item.name }}</h5>
+                    <p class="text-[10px] text-gray-400">{{ item.price }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="activeTab === 'spending'" class="space-y-6">
+            <div class="bg-gray-800 p-8 rounded-[2rem] text-white shadow-xl">
+                <p class="text-[10px] tracking-widest opacity-50 uppercase mb-2">Common Fund Balance</p>
+                <h2 class="text-3xl font-light">¥ {{ commonFund.toLocaleString() }}</h2>
+            </div>
+            
+            <div class="bg-white p-6 rounded-[2rem] space-y-4 border border-gray-100">
+                <h3 class="text-xs font-medium text-gray-400 uppercase tracking-widest">New Expense</h3>
+                <input v-model="expense.title" type="text" placeholder="Item Name" class="w-full border-b border-gray-100 py-3 text-sm focus:border-black outline-none bg-transparent">
+                <input v-model.number="expense.amount" type="number" placeholder="Amount (JPY)" class="w-full border-b border-gray-100 py-3 text-sm focus:border-black outline-none bg-transparent">
+                <div class="flex gap-2 pt-2">
+                    <button @click="expense.payer = 'Common'" :class="expense.payer === 'Common' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'" class="flex-1 py-2 rounded-full text-[10px]">公費包</button>
+                    <button @click="expense.payer = 'Personal'" :class="expense.payer === 'Personal' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'" class="flex-1 py-2 rounded-full text-[10px]">個人墊付</button>
+                </div>
+                <button @click="addExpense" class="w-full bg-gray-100 hover:bg-black hover:text-white py-4 rounded-2xl text-xs tracking-widest transition duration-500 mt-4">RECORD</button>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="h-12"></div>
+</div>
+
+<script>
+    const { createApp, ref } = Vue;
+
+    createApp({
+        setup() {
+            const activeTab = ref('home');
+            const commonFund = ref(50000);
+            const expense = ref({ title: '', amount: null, payer: 'Common' });
+            
+            const schedule = ref([
+                { time: '09:00', location: 'New Chitose Airport', desc: '' },
+                { time: '13:00', location: 'Sapporo Station', desc: '' }
+            ]);
+
+            const shoppingList = ref([
+                { name: 'LeTAO Cheesecake', price: '¥2,500', img: null },
+                { name: 'Shiroi Koibito', price: '¥1,200', img: null }
+            ]);
+
+            const openMap = (location) => {
+                const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location + ' Hokkaido')}`;
+                window.open(url, '_blank');
+            };
+
+            const addExpense = () => {
+                if (!expense.value.amount || !expense.value.title) return;
+                if (expense.value.payer === 'Common') {
+                    commonFund.value -= expense.value.amount;
+                }
+                alert(`Saved: ${expense.value.title}`);
+                expense.value = { title: '', amount: null, payer: 'Common' };
+            };
+
+            const triggerPhotoUpload = () => {
+                document.getElementById('photoInput').click();
+            };
+
+            const handlePhotoUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const name = prompt("Item Name?") || "Unknown";
+                        shoppingList.value.push({
+                            name: name,
+                            price: "Pending",
+                            img: e.target.result
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const removeItem = (type, index) => {
+                if (confirm('Delete this item?')) {
+                    if (type === 'schedule') schedule.value.splice(index, 1);
+                    if (type === 'shopping') shoppingList.value.splice(index, 1);
+                }
+            };
+
+            const addItem = (type) => {
+                if (type === 'schedule') {
+                    const loc = prompt("Destination?");
+                    const time = prompt("Time? (e.g. 14:00)");
+                    if (loc && time) schedule.value.push({ time, location: loc });
+                }
+            };
+
+            return {
+                activeTab, schedule, shoppingList, commonFund, expense,
+                openMap, addExpense, triggerPhotoUpload, handlePhotoUpload,
+                removeItem, addItem
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
